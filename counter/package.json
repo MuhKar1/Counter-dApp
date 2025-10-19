@@ -1,5 +1,12 @@
 {
-  "license": "ISC",
+  "name": "solana-counter-program",
+  "version": "0.1.0",
+  "description": "A Solana counter program built with Anchor framework",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MuhKar1/Counter-dApp.git"
+  },
   "scripts": {
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"

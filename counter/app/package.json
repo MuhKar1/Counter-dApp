@@ -1,7 +1,13 @@
 {
-  "name": "app",
+  "name": "solana-counter-frontend",
   "version": "0.1.0",
+  "description": "React frontend for Solana Counter dApp",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MuhKar1/Counter-dApp.git",
+    "directory": "counter/app"
+  },
   "dependencies": {
     "@coral-xyz/anchor": "^0.31.1",
     "@solana/wallet-adapter-base": "^0.9.27",
