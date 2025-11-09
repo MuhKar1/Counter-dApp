@@ -14,6 +14,7 @@ module.exports = function override(config, env) {
     url: require.resolve('url'),
     buffer: require.resolve('buffer'),
     process: require.resolve('process/browser.js'),
+    vm: require.resolve('vm-browserify'),
   };
 
   // Add aliases
