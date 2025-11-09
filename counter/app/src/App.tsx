@@ -1,5 +1,5 @@
 // React imports for component functionality and hooks
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 // Solana wallet adapter hooks for connecting to user's wallet
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 // Pre-built wallet connection button component
@@ -39,9 +39,21 @@ function App() {
   const [walletDetected, setWalletDetected] = useState<boolean>(false); // Track if wallet extension is detected
 
   // Create Anchor provider to interact with Solana programs
-  const provider = new AnchorProvider(connection, wallet as any, {});
-  // Initialize the counter program using its IDL and provider
-  const program = new Program(idl as Idl, provider);
+  const provider = useMemo(() => new AnchorProvider(connection, wallet as any, {}), [connection, wallet]);
+
+  // Initialize the counter program using its IDL and provider.
+  // Use useMemo to prevent recreation on every render
+  const program = useMemo(() => {
+    if (!provider) return null;
+    try {
+      // Program constructor: new Program(idl, provider)
+      // The program ID is taken from the IDL's address field
+      return new Program(idl as Idl, provider);
+    } catch (error) {
+      console.error('Failed to create program:', error);
+      return null;
+    }
+  }, [provider]);
 
   /**
    * Calculates the Program Derived Address (PDA) for a user's counter account
@@ -49,6 +61,9 @@ function App() {
    * This ensures each user has their own unique counter account
    */
   const getCounterAddress = (userPubkey: PublicKey) => {
+    if (!program) {
+      throw new Error('Program not initialized');
+    }
     const [counterAddress] = PublicKey.findProgramAddressSync(
       [Buffer.from("counter"), userPubkey.toBuffer()], // Seeds: "counter" + user's public key
       program.programId // Counter program ID
@@ -62,7 +77,7 @@ function App() {
    * Includes fallback manual deserialization if Anchor fails
    */
   const fetchCounter = useCallback(async () => {
-    if (!publicKey) return; // Exit if wallet not connected
+    if (!publicKey || !program) return; // Exit if wallet not connected or program not initialized
     
     try {
       // Calculate the user's unique counter account address (PDA)
@@ -189,17 +204,68 @@ function App() {
   }, []);
 
   /**
+   * Parse blockchain errors and return user-friendly messages
+   */
+  const getUserFriendlyError = (error: any): string => {
+    const message = error?.message || error?.toString() || 'Unknown error';
+    const logs = error?.logs || [];
+
+    // Wallet rejection errors
+    if (message.includes('User rejected') || message.includes('rejected') || message.includes('cancelled')) {
+      return 'Transaction cancelled. You can try again when ready.';
+    }
+
+    // Insufficient funds
+    if (message.includes('insufficient') || message.includes('funds') || message.includes('balance')) {
+      return 'Not enough SOL in your wallet. You need at least 0.000005 SOL for transaction fees.';
+    }
+
+    // Network/connection errors
+    if (message.includes('network') || message.includes('connection') || message.includes('timeout')) {
+      return 'Network connection issue. Please check your internet connection and try again.';
+    }
+
+    // Account not found/initialized
+    if (message.includes('Account not found') || message.includes('account does not exist')) {
+      return 'Your counter hasn\'t been created yet. Please initialize it first.';
+    }
+
+    // Transaction simulation failures
+    if (message.includes('simulation') && message.includes('failed')) {
+      return 'Transaction would fail. This might be due to insufficient funds or network issues.';
+    }
+
+    // Blockhash expired
+    if (message.includes('blockhash') || message.includes('expired')) {
+      return 'Transaction took too long. Please try again.';
+    }
+
+    // Program-specific errors (custom program errors)
+    if (logs.some((log: string) => log.includes('custom program error'))) {
+      return 'Something went wrong with the counter operation. Please try again.';
+    }
+
+    // Generic fallback
+    return 'Transaction failed. Please check your wallet and try again.';
+  };
+
+  /**
    * Initialize a new counter account on the blockchain
    * Creates a PDA (Program Derived Address) unique to the user
    * Requires SOL for transaction fees and account rent
    */
   const initializeCounter = async () => {
-    if (!publicKey) return; // Ensure wallet is connected
+    if (!publicKey || !program) return; // Ensure wallet is connected and program is initialized
     setLoading(true);
     setError(null);
     
     try {
       const counterAddress = getCounterAddress(publicKey);
+      if (!counterAddress) {
+        setError('Failed to calculate counter address');
+        setLoading(false);
+        return;
+      }
       console.info('[Counter] Initializing counter...');
       
       // Get fresh blockhash to ensure transaction validity and avoid expiration
@@ -256,11 +322,15 @@ function App() {
    * Shows detailed logs and error information
    */
   const simulateInitialize = async () => {
-    if (!publicKey) return; // Ensure wallet is connected
+    if (!publicKey || !program) return; // Ensure wallet is connected and program is initialized
     setError(null);
     
     try {
       const counterAddress = getCounterAddress(publicKey);
+      if (!counterAddress) {
+        setError('Failed to calculate counter address');
+        return;
+      }
       
       // First check if account already exists (would cause transaction to fail)
       const accountInfo = await connection.getAccountInfo(counterAddress);
@@ -316,12 +386,17 @@ function App() {
    * Includes overflow protection in the Rust program
    */
   const incrementCounter = async () => {
-    if (!publicKey) return; // Ensure wallet is connected
+    if (!publicKey || !program) return; // Ensure wallet is connected and program is initialized
     setLoading(true);
     setError(null);
     
     try {
       const counterAddress = getCounterAddress(publicKey);
+      if (!counterAddress) {
+        setError('Failed to calculate counter address');
+        setLoading(false);
+        return;
+      }
       
       // Get fresh blockhash for transaction validity
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
@@ -347,7 +422,7 @@ function App() {
       await fetchCounter(); // Refresh UI with updated value
     } catch (error) {
       console.error("Error incrementing counter:", error);
-      setError(`Failed to increment counter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setError(`Failed to increment counter: ${getUserFriendlyError(error)}`);
     } finally {
       setLoading(false);
     }
@@ -359,12 +434,17 @@ function App() {
    * Will fail if counter would go below 0
    */
   const decrementCounter = async () => {
-    if (!publicKey) return; // Ensure wallet is connected
+    if (!publicKey || !program) return; // Ensure wallet is connected and program is initialized
     setLoading(true);
     setError(null);
     
     try {
       const counterAddress = getCounterAddress(publicKey);
+      if (!counterAddress) {
+        setError('Failed to calculate counter address');
+        setLoading(false);
+        return;
+      }
       
       // Get fresh blockhash for transaction validity  
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
@@ -390,7 +470,7 @@ function App() {
       await fetchCounter(); // Refresh UI with updated value
     } catch (error) {
       console.error("Error decrementing counter:", error);
-      setError(`Failed to decrement counter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setError(`Failed to decrement counter: ${getUserFriendlyError(error)}`);
     } finally {
       setLoading(false);
     }
@@ -402,7 +482,7 @@ function App() {
    * Returns the rent SOL back to the user's wallet
    */
   const closeCounter = async () => {
-    if (!publicKey) return; // Ensure wallet is connected
+    if (!publicKey || !program) return; // Ensure wallet is connected and program is initialized
     
     // Safety confirmation for destructive action
     if (!window.confirm('Are you sure you want to close the counter? This will delete the account and cannot be undone.')) {
@@ -414,6 +494,11 @@ function App() {
     
     try {
       const counterAddress = getCounterAddress(publicKey);
+      if (!counterAddress) {
+        setError('Failed to calculate counter address');
+        setLoading(false);
+        return;
+      }
       
       // Get fresh blockhash for transaction validity
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
@@ -441,30 +526,7 @@ function App() {
       setError('Counter closed successfully! Account has been deleted and rent returned.');
     } catch (error) {
       console.error("Error closing counter:", error);
-      setError(`Failed to close counter: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Request a devnet SOL airdrop (1 SOL) for testing purposes
-   * Only works on devnet - mainnet requires purchasing SOL
-   * Alternative: use https://faucet.solana.com/ or Solana CLI airdrop
-   */
-  const requestAirdrop = async () => {
-    if (!publicKey) return; // Ensure wallet is connected
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Request 1 SOL (1,000,000,000 lamports) from devnet faucet
-      const sig = await connection.requestAirdrop(publicKey, 1_000_000_000);
-      await connection.confirmTransaction(sig); // Wait for airdrop confirmation
-      await fetchBalance(); // Update balance display
-    } catch (e: any) {
-      console.error('Airdrop failed:', e);
-      setError(`Airdrop failed: ${e.message || e.toString()}`);
+      setError(`Failed to close counter: ${getUserFriendlyError(error)}`);
     } finally {
       setLoading(false);
     }
@@ -482,6 +544,44 @@ function App() {
       {/* Main content container with max width for readability */}
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <h1 style={{ textAlign: 'center', color: '#ffffff' }}>Solana Counter App</h1>
+        {/* Informational banner: purpose and wallet safety notice - only show when wallet not connected */}
+        {!publicKey && (
+          <div style={{
+            border: '1px solid #2b2b2b',
+            borderRadius: '8px',
+            padding: '20px',
+            margin: '10px 0',
+            backgroundColor: '#111218'
+          }}>
+            <h3 style={{ margin: '0 0 12px 0', color: '#b3c7ff' }}>🚀 Solana Counter dApp</h3>
+            
+            <p style={{ margin: '0 0 15px 0', color: '#d0d7ff', lineHeight: '1.5' }}>
+              A decentralized counter that stores your data permanently on the Solana blockchain. 
+              Each user gets their own counter account
+            </p>
+
+            <div style={{ marginBottom: '15px' }}>
+              <h4 style={{ margin: '0 0 8px 0', color: '#ffffff' }}>Why Connect Your Wallet?</h4>
+              <ul style={{ margin: 0, color: '#d0d7ff', paddingLeft: '20px', lineHeight: '1.5' }}>
+                <li>Create and own your personal counter on the blockchain</li>
+                <li>Increment/decrement with secure, verifiable transactions</li>
+              </ul>
+            </div>
+
+            <div style={{ 
+              backgroundColor: '#1a1a2e', 
+              border: '1px solid #4a4a6a', 
+              borderRadius: '6px', 
+              padding: '12px',
+              marginTop: '15px'
+            }}>
+              <p style={{ margin: 0, color: '#ffcccb', fontSize: '14px', lineHeight: '1.4' }}>
+                <strong>🔒 Security:</strong> Your wallet controls all transactions. Only public address needed. 
+                Private keys stay secure in your wallet.
+              </p>
+            </div>
+          </div>
+        )}
         
         {/* Wallet Connection Section - Shows wallet status and balance */}
         <div style={{ 
@@ -526,11 +626,13 @@ function App() {
             }}>
               <h2 style={{ color: '#ffffff' }}>📋 Program Information</h2>
               <div style={{ fontFamily: 'monospace', fontSize: '14px', color: '#e0e0e0' }}>
-                <p><strong style={{ color: '#ffffff' }}>Program ID:</strong> {program.programId.toBase58()}</p>
-                <p><strong style={{ color: '#ffffff' }}>Your PDA:</strong> {getCounterAddress(publicKey).toBase58()}</p>
-                <p><strong style={{ color: '#ffffff' }}>Network:</strong> Devnet</p>
+                <p><strong style={{ color: '#ffffff' }}>Program ID:</strong> {program?.programId?.toBase58() || 'Loading...'}</p>
+                <p><strong style={{ color: '#ffffff' }}>Your PDA:</strong> {publicKey && program ? getCounterAddress(publicKey).toBase58() : 'Loading...'}</p>
+                <p><strong style={{ color: '#ffffff' }}>Network:</strong> {process.env.REACT_APP_SOLANA_NETWORK || 'devnet'}</p>
               </div>
             </div>
+
+
 
             {/* Counter Status Section */}
             <div style={{ 
@@ -715,8 +817,13 @@ function App() {
             backgroundColor: '#1e1e1e',
             textAlign: 'center'
           }}>
-            <h2 style={{ color: '#ffffff' }}>👋 Welcome!</h2>
-            <p style={{ color: '#e0e0e0' }}>Please connect your wallet to start using the counter app.</p>
+            <h2 style={{ color: '#ffffff' }}>👋 Connect Your Wallet</h2>
+            <p style={{ color: '#e0e0e0', marginBottom: '15px' }}>
+              Connect your Solana wallet to create and manage your personal blockchain counter.
+            </p>
+            <p style={{ color: '#ffb74d', fontSize: '14px' }}>
+              💡 <strong>Tip:</strong> Use Phantom or Solflare wallet. On devnet, you can get free SOL for testing.
+            </p>
           </div>
         )}
       </div>
