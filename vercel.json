@@ -6,6 +6,5 @@
       "use": "@vercel/next",
       "config": { "distDir": ".next" }
     }
-  ],
-  "routes": []
+  ]
 }
