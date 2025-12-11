@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.counterRoutes = void 0;
+const express_1 = __importDefault(require("express"));
+const counter_controllers_1 = require("../controllers/counter.controllers");
+const router = express_1.default.Router();
+exports.counterRoutes = router;
+router.get("/:user", counter_controllers_1.getCounter);
+router.post("/initialize/:user", counter_controllers_1.buildInitialize);
+router.post("/initialize", counter_controllers_1.buildInitialize);
+router.post("/increment/:user", counter_controllers_1.buildIncrement);
+router.post("/increment", counter_controllers_1.buildIncrement);
+router.post("/decrement/:user", counter_controllers_1.buildDecrement);
+router.post("/decrement", counter_controllers_1.buildDecrement);
+router.post("/close/:user", counter_controllers_1.buildClose);
+router.post("/close", counter_controllers_1.buildClose);
+router.post("/submit", counter_controllers_1.submitSignedTransaction);

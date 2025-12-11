@@ -4,3 +4,18 @@ test-ledger/
 node_modules/
 *.log
 .DS_Store
+
+# Sensitive and environment files - do NOT commit these
+*.env
+.env.*
+**/.env
+**/*.keypair.json
+**/*-keypair.json
+**/faucet-keypair.json
+**/snapshot*
+**/rocksdb*
+admin.rpc
+*.pem
+*.key
+secrets/
+secrets/**

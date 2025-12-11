@@ -1,0 +1,546 @@
+/*
+  App.css
+  Styles for the Counter dApp frontend. The file uses modern CSS with
+  subtle gradients, rounded containers, and utility classes for the
+  wallet UI and action buttons.
+
+  Notes for contributors:
+  - Keep layout-related rules (widths, paddings) conservative so the
+    wallet modal and buttons remain stable across devices.
+  - The `wallet-button` class customizes the WalletMultiButton provided by
+    `@solana/wallet-adapter-react-ui` and includes `!important` rules to
+    override library defaults.
+*/
+
+.App {
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+    color: #ffffff;
+    min-height: 100vh;
+  }
+  
+  .main-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+  
+  .header {
+    text-align: center;
+    color: #ffffff;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .info-banner {
+    /* Banner shown when wallet is not connected. Keep text readable on dark background. */
+    border: 1px solid #2d3748;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 0 0 24px 0;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  .info-banner h3 {
+    margin: 0 0 16px 0;
+    color: #a5b4fc;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  
+  .info-banner p {
+    margin: 0 0 16px 0;
+    color: #e0e7ff;
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+  
+  .info-banner h4 {
+    margin: 16px 0 10px 0;
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  
+  .info-banner ul {
+    margin: 0 0 16px 0;
+    color: #e0e7ff;
+    padding-left: 24px;
+    line-height: 1.7;
+  }
+  
+  .info-banner ul li {
+    margin-bottom: 8px;
+  }
+  
+  .security-notice {
+    background-color: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+  }
+  
+  .security-notice p {
+    margin: 0;
+    color: #c7d2fe;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  
+  .section {
+    border: 1px solid #2d3748;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 24px 0;
+    background: rgba(30, 30, 46, 0.6);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.2s ease;
+  }
+  
+  .section:hover {
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .wallet-section {
+    /* Wallet area: contains the wallet button and small status info */
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+    text-align: center;
+  }
+  
+  .wallet-section h2 {
+    color: #ffffff;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  
+  .wallet-detected-warning {
+    background-color: #2d1810;
+    border: 1px solid #ff6b35;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .wallet-detected-warning p {
+    color: #ff6b35;
+    margin: 0;
+  }
+  
+  .wallet-detected-warning a {
+    color: #4CAF50;
+  }
+  
+  .wallet-status {
+    margin-top: 16px;
+    padding: 16px;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+  }
+  
+  .wallet-status .connected {
+    color: #34d399;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+  }
+  
+  .wallet-status .balance {
+    color: #e0e7ff;
+    font-size: 0.95rem;
+  }
+  
+  .program-info-section {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+  }
+  
+  .program-info-section h2 {
+    color: #ffffff;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  
+  .program-info-section div {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    padding: 12px;
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 6px;
+    word-break: break-all;
+  }
+  
+  .program-info-section strong {
+    color: #a5b4fc;
+    font-weight: 600;
+  }
+  
+  .counter-status-section {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+  }
+  
+  .counter-status-section.initialized {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.15) 100%);
+  }
+  
+  .counter-status-section h2 {
+    color: #ffffff;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  
+  .error-message {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    color: #fca5a5;
+    font-size: 0.9rem;
+  }
+  
+  .status-initialized {
+    display: inline-block;
+    color: #34d399;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 12px 20px;
+    background: rgba(34, 197, 94, 0.15);
+    border-radius: 8px;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+  
+  .status-not-found {
+    display: inline-block;
+    color: #fbbf24;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 12px 20px;
+    background: rgba(251, 191, 36, 0.15);
+    border-radius: 8px;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+  }
+  
+  .actions-section {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+  }
+  
+  .actions-section h2 {
+    color: #ffffff;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+  
+  .actions-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .action-button {
+    padding: 12px 20px;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .action-button:hover:not(:disabled) {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    filter: brightness(1.1);
+  }
+  
+  .action-button:active:not(:disabled) {
+    filter: brightness(0.95);
+  }
+  
+  .action-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    filter: grayscale(0.5);
+  }
+  
+  .refresh-button {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  }
+  
+  .initialize-button {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
+  
+  .simulate-button {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  }
+  
+  .increment-button {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  }
+  
+  .decrement-button {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  }
+  
+  .close-button {
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  }
+  
+  .balance-warning {
+    background-color: #3b2f1b;
+    border: 1px solid #FF9800;
+    border-radius: 4px;
+    padding: 10px;
+    color: #FFB74D;
+  }
+  
+  .connect-wallet-prompt {
+    border: 1px solid #2d3748;
+    border-radius: 12px;
+    padding: 48px;
+    margin: 24px 0;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  }
+  
+  .connect-wallet-prompt h2 {
+    color: #ffffff;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  
+  .connect-wallet-prompt p {
+    color: #e0e7ff;
+    margin-bottom: 16px;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  
+  .connect-wallet-prompt .tip {
+    color: #fbbf24;
+    font-size: 0.9rem;
+    padding: 12px;
+    background: rgba(251, 191, 36, 0.1);
+    border-radius: 8px;
+    display: inline-block;
+  }
+  
+  .wallet-button {
+    /* Overrides for the WalletMultiButton from wallet-adapter. The
+       `!important` rules ensure our visual style is applied on top of the
+       bundled UI library defaults. Keep these changes minimal to avoid
+       surprising behavior in the modal. */
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
+    padding: 14px 28px !important;
+    font-size: 1rem !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3) !important;
+    border: none !important;
+  }
+  
+  .wallet-button:hover:not([disabled]) {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4) !important;
+    filter: brightness(1.1) !important;
+  }
+
+/* Confirmation panel for destructive actions (close counter) */
+.confirm-panel {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  border-radius: 8px;
+}
+
+.confirm-panel p {
+  margin: 0 0 8px 0;
+  color: #ffd8a8;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.confirm-button {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.cancel-button {
+  background: transparent;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+}
+  
+  .wallet-modal-container .wallet-adapter-modal-list {
+    background: #1e1e1e !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button {
+    background: #2a2a2a !important;
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:hover {
+    background: #3a3a3a !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-title {
+    color: white !important;
+    background: #1e1e1e !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-collapse-button {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-collapse-button:hover {
+    background: #3a3a3a !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-button-close {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-button-close:hover {
+    background: #3a3a3a !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-wrapper {
+    background: rgba(0, 0, 0, 0.7) !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):hover {
+    background-color: #5e0bad !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px #8e44ad !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button img {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button span {
+    font-size: 16px;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]) {
+    background-color: #3a3a3a;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):hover {
+    background-color: #4a4a4a;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):focus {
+    background-color: #5a5a5a;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):active {
+    background-color: #6a6a6a;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):visited {
+    background-color: #3a3a3a;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 2px #8e44ad !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):-webkit-any-link {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):-moz-any-link {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):any-link {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):-webkit-any-link:hover {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):-moz-any-link:hover {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):any-link:hover {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):-webkit-any-link:focus {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):-moz-any-link:focus {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):any-link:focus {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):-webkit-any-link:active {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):-moz-any-link:active {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):any-link:active {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):-webkit-any-link:visited {
+    color: white !important;
+  }
+  
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):-moz-any-link:visited {
+    color: white !important;
+  }
+
+  .wallet-modal-container .wallet-adapter-modal-list li button:not([disabled]):any-link:visited {
+    color: white !important;
+  }

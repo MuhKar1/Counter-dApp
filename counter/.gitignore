@@ -5,3 +5,12 @@ target
 node_modules
 test-ledger
 .yarn
+
+# Sensitive files
+*.env
+.env.*
+**/*.keypair.json
+**/*-keypair.json
+**/faucet-keypair.json
+**/snapshot*
+admin.rpc
