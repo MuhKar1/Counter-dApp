@@ -1,0 +1,7 @@
+{
+  "name": "counter-dapp-monorepo",
+  "private": true,
+  "scripts": {
+    "build": "cd counter/app/frontend && npm run build"
+  }
+}

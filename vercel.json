@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "counter/app/frontend/package.json",
+      "use": "@vercel/next",
+      "config": { "distDir": ".next" }
+    }
+  ],
+  "routes": []
+}
